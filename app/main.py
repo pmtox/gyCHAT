@@ -1,5 +1,7 @@
 import os
 
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.types import ASGIApp, Receive, Scope, Send
@@ -17,7 +19,10 @@ from app.routers.posts import router as posts_router
 from app.routers.admin import router as admin_router
 
 # Create database tables
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as e:
+    print("Startup schema note:", e)
 
 # Auto-promote first user to admin if no admin exists
 try:
