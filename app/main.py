@@ -63,10 +63,10 @@ class WebSocketSafeCORSMiddleware:
             await self.cors_app(scope, receive, send)
 
 
-cors_origins = os.getenv(
-    "CORS_ORIGINS",
-    "http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174,https://gychat.netlify.app",
-).split(",")
+cors_origins = [
+    "http://localhost:5173",
+    "https://gychat.netlify.app",
+]
 
 app.add_middleware(
     WebSocketSafeCORSMiddleware,
