@@ -3,5 +3,5 @@
   publish = "dist"
 
 [build.environment]
-  VITE_API_BASE_URL = https://gychatweb.onrender.com
+  VITE_API_BASE_URL = "https://gychatweb.onrender.com"
   VITE_GOOGLE_CLIENT_ID = 999302249047-4qp0pkeebds0nnuulu8f0jcvnd4v1a5h.apps.googleusercontent.com
