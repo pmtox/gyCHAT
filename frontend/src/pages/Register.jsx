@@ -26,6 +26,7 @@ export default function Register() {
       await googleRegister({ credential: googleCredential, username: form.username, password: form.password })
       navigate('/chat')
     } catch (err) {
+      console.error('Google register error:', err?.response?.data || err)
       setError(err?.response?.data?.detail || 'Google registration failed.')
     } finally {
       setLoading(false)

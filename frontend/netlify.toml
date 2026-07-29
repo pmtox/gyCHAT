@@ -4,3 +4,4 @@
 
 [build.environment]
   VITE_API_BASE_URL = "https://your-backend-url.example.com"
+  VITE_GOOGLE_CLIENT_ID = "your_google_oauth_client_id"
