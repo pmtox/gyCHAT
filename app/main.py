@@ -2,16 +2,33 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-from app.database import Base, engine
+from app.database import Base, engine, SessionLocal
 from app.models.user import User
+from app.models.message import Message
+from app.models.post import Post, PostUpvote, PostComment
+
 from app.routers.auth import router as auth_router
 from app.routers.users import router as users_router
-from app.models.message import Message
 from app.routers.messages import router as messages_router
 from app.routers.ws import router as ws_router
+from app.routers.posts import router as posts_router
+from app.routers.admin import router as admin_router
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
+
+# Auto-promote first user to admin if no admin exists
+try:
+    db = SessionLocal()
+    has_admin = db.query(User).filter(User.is_admin == True).first()
+    if not has_admin:
+        first_user = db.query(User).first()
+        if first_user:
+            first_user.is_admin = True
+            db.commit()
+    db.close()
+except Exception as e:
+    print("Startup admin check note:", e)
 
 app = FastAPI(
     title="GyChat"
@@ -57,7 +74,10 @@ app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(messages_router)
 app.include_router(ws_router)
+app.include_router(posts_router)
+app.include_router(admin_router)
+
 
 @app.get("/")
 def home():
-    return {"message": "GyChat Backend Running "}
+    return {"message": "GyChat Backend Running"}

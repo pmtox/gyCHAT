@@ -2,14 +2,19 @@
 
 GyChat is a high-performance, real-time messaging application powered by a **FastAPI** backend, **PostgreSQL** database persistence, and a modern **React + Vite** frontend with a custom CRT phosphor aesthetic.
 
+GyChat 2.0 now includes a Google-first account creation experience, a command-center dashboard, a coder community feed, and an admin panel for moderation and monitoring.
+
 ---
 
 ## 🌟 Key Features
 
 - **⚡ Real-Time WebSockets**: Instant bi-directional chat messaging using FastAPI WebSocket endpoints.
-- **🔐 JWT Authentication & Security**: Secure user registration, password hashing with `bcrypt`, OAuth2 form login, and token-based WebSocket handshake authentication.
+- **🔐 Google-First Authentication**: Users create an account through Google, then choose a unique GyChat username and password. This keeps the experience simple while still giving each user a proper GyChat account.
+- **🧠 Command Center Dashboard**: A unified shell with Coder Feed, Direct Messages, Profile, and Admin Panel tabs.
+- **📰 Coder Feed**: Community blog-style posts with markdown content, code blocks, tags, upvotes, and comments.
+- **👥 Username-Based User Search**: Search users by username to start a conversation instantly.
+- **🛡️ Admin Panel**: View platform metrics and manage admin privileges.
 - **💾 Full PostgreSQL Persistence**: Every message exchanged via WebSocket is committed to PostgreSQL in real time and fetched automatically across all browsers, devices, and sessions.
-- **👥 Dynamic User Discovery**: Server-driven contacts list allowing registered users to discover each other dynamically.
 - **🎨 High-Contrast Phosphor UI**: Premium dark/light themes (pure `#000000` / `#FFFFFF`), phosphor green (`#17E88F`) accent LED highlights, noise grain overlay, and CRT scanline grid layout.
 
 ---
@@ -77,12 +82,26 @@ GyChat is a high-performance, real-time messaging application powered by a **Fas
 ## 🔌 API & WebSocket Documentation
 
 ### **Authentication**
-- `POST /auth/register`: Create a new user account.
-- `POST /auth/login`: Authenticate via OAuth2 Password Form (`username` = email, `password`) and receive JWT access token.
+- `POST /auth/google/register`: Create a GyChat account using a verified Google credential, plus a username and password.
+- `POST /auth/register` and `POST /auth/login`: These endpoints remain available in the backend for compatibility, but the UI uses the Google-first flow by default.
 
 ### **Users**
 - `GET /users/me`: Retrieve current logged-in user profile.
 - `GET /users`: Retrieve list of all other registered users for contacts sidebar.
+- `GET /users/search?q=...`: Search users by username.
+- `PUT /users/profile/me`: Update bio, featured platform info, skills, and profile metadata.
+
+### **Posts / Feed**
+- `GET /posts`: Fetch the coder feed.
+- `POST /posts`: Create a feed post.
+- `POST /posts/{post_id}/upvote`: Toggle an upvote on a post.
+- `GET /posts/{post_id}/comments`: Fetch comments for a post.
+- `POST /posts/{post_id}/comments`: Add a comment.
+
+### **Admin**
+- `GET /admin/stats`: Retrieve platform statistics.
+- `GET /admin/users`: Retrieve a user list for admins.
+- `POST /admin/users/{user_id}/toggle-admin`: Toggle admin privileges for a user.
 
 ### **Messages**
 - `GET /messages/{user_id}`: Fetch complete conversation history between current user and specified `user_id`.
@@ -125,6 +144,7 @@ GyChat is a high-performance, real-time messaging application powered by a **Fas
    SECRET_KEY=your_super_secret_jwt_key
    ALGORITHM=HS256
    ACCESS_TOKEN_EXPIRE_MINUTES=30
+   GOOGLE_CLIENT_ID=your_google_oauth_client_id
    ```
 5. Start the FastAPI server:
    ```bash
@@ -137,11 +157,27 @@ GyChat is a high-performance, real-time messaging application powered by a **Fas
    cd frontend
    npm install
    ```
-2. Run the Vite development server:
+2. Create a `.env` file inside `frontend` with your Google client ID:
+   ```env
+   VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id
+   ```
+3. Run the Vite development server:
    ```bash
    npm run dev
    ```
-3. Open `http://localhost:5173` (or `http://localhost:5174`) in your browser.
+4. Open `http://localhost:5173` (or `http://localhost:5174`) in your browser.
+
+### 4️⃣ Google OAuth Setup
+1. Open the Google Cloud Console.
+2. Create or select a project.
+3. Enable the Google Identity Services / OAuth client.
+4. Create a Web OAuth client ID.
+5. Add your local origins:
+   - `http://localhost:5173`
+   - `http://127.0.0.1:5173`
+6. Paste the client ID into both `.env` files above.
+
+Once configured, users can create a GyChat account through Google, then choose a username and password for their GyChat profile.
 
 ---
 

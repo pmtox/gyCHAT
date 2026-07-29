@@ -30,8 +30,19 @@ export function AuthProvider({ children }) {
     localStorage.setItem('gychat_token', data.access_token)
     setToken(data.access_token)
 
-    // The backend exposes GET /users/me, so fetch the logged-in user's
-    // id/username straight from the server instead of asking for it manually.
+    const me = await api.get('/users/me', {
+      headers: { Authorization: `Bearer ${data.access_token}` },
+    })
+    setSessionUser(me.data)
+
+    return data
+  }
+
+  async function googleRegister({ credential, username, password }) {
+    const { data } = await api.post('/auth/google/register', { credential, username, password })
+    localStorage.setItem('gychat_token', data.access_token)
+    setToken(data.access_token)
+
     const me = await api.get('/users/me', {
       headers: { Authorization: `Bearer ${data.access_token}` },
     })
@@ -54,7 +65,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ token, user, register, login, logout, setSessionUser, isAuthenticated: !!token }}
+      value={{ token, user, register, login, googleRegister, logout, setSessionUser, isAuthenticated: !!token }}
     >
       {children}
     </AuthContext.Provider>

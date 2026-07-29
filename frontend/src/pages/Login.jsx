@@ -36,7 +36,7 @@ export default function Login() {
           <h1 className="font-display text-2xl font-semibold tracking-tight">GyChat</h1>
         </div>
 
-        <p className="mb-6 text-sm opacity-60">Log in to continue your conversations.</p>
+        <p className="mb-6 text-sm opacity-60">Log in with your email and password.</p>
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <input
