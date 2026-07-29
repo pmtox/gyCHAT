@@ -1,9 +1,8 @@
 import axios from 'axios'
 
-// Base URL matches the existing FastAPI backend. Do not change the endpoint paths —
-// they must stay in sync with app/routers/auth.py.
+// Base URL can be overridden in Netlify/Vite env vars for production deployments.
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000',
   headers: {
     'Content-Type': 'application/json',
   },
