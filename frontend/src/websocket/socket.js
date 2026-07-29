@@ -1,83 +1,55 @@
-// ---------------------------------------------------------------------------
-// WebSocket client — singleton connection per session.
-// Exports the 5 functions that Chat.jsx depends on:
-//   connectSocket, disconnectSocket, onMessage, sendMessage, isConnected
-// ---------------------------------------------------------------------------
+// Thin wrapper around the native WebSocket API.
+// Connection + message shape match app/routers/websocket.py and
+// app/websocket/manager.py exactly — do not alter the payload format.
 
-let ws = null
-let listeners = []
+let socket = null
+const listeners = new Set()
 
-/**
- * Open a WebSocket to the backend.
- * The JWT token is sent as a query-param so the server can authenticate
- * the handshake (see app/routers/ws.py → _authenticate_socket).
- */
 export function connectSocket(userId, token) {
-  // Don't open a second connection if one is already live.
-  if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
-    return
-  }
+  if (socket && socket.readyState === WebSocket.OPEN) return socket
 
-  const url = `ws://127.0.0.1:8000/ws/${userId}?token=${encodeURIComponent(token)}`
-  ws = new WebSocket(url)
+  // Token is required now — the backend verifies it belongs to userId
+  // before accepting the connection (see app/routers/ws.py).
+socket = new WebSocket(
+  `${import.meta.env.VITE_WS_URL}/ws/${userId}?token=${encodeURIComponent(token)}`
+)
 
-  ws.onopen = () => {
-    console.log('[ws] connected')
-  }
-
-  ws.onmessage = (event) => {
+  socket.onmessage = (event) => {
+    let data
     try {
-      const data = JSON.parse(event.data)
-      listeners.forEach((fn) => fn(data))
-    } catch (err) {
-      console.error('[ws] failed to parse message', err)
+      data = JSON.parse(event.data)
+    } catch {
+      return
     }
+    listeners.forEach((cb) => cb(data))
   }
 
-  ws.onerror = (err) => {
-    console.error('[ws] error', err)
+  socket.onclose = () => {
+    socket = null
   }
 
-  ws.onclose = () => {
-    console.log('[ws] disconnected')
-  }
+  return socket
 }
 
-/**
- * Close the current connection and clear all listeners.
- */
 export function disconnectSocket() {
-  if (ws) {
-    ws.close()
-    ws = null
+  if (socket) {
+    socket.close()
+    socket = null
   }
-  listeners = []
 }
 
-/**
- * Register a callback that fires for every incoming message.
- * Returns an unsubscribe function.
- */
 export function onMessage(callback) {
-  listeners.push(callback)
-  return () => {
-    listeners = listeners.filter((fn) => fn !== callback)
-  }
+  listeners.add(callback)
+  return () => listeners.delete(callback)
 }
 
-/**
- * Send a chat message through the open socket.
- * Returns true if the message was sent, false otherwise.
- */
-export function sendMessage(receiverId, text) {
-  if (!ws || ws.readyState !== WebSocket.OPEN) return false
-  ws.send(JSON.stringify({ receiver_id: receiverId, message: text }))
+// Sends { receiver_id, message } — the exact shape the backend expects.
+export function sendMessage(receiverId, message) {
+  if (!socket || socket.readyState !== WebSocket.OPEN) return false
+  socket.send(JSON.stringify({ receiver_id: receiverId, message }))
   return true
 }
 
-/**
- * Check whether the socket is currently open.
- */
 export function isConnected() {
-  return ws !== null && ws.readyState === WebSocket.OPEN
+  return !!socket && socket.readyState === WebSocket.OPEN
 }
