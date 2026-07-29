@@ -21,23 +21,12 @@ export default function Chat() {
   const [activeTab, setActiveTab] = useState('feed')
   const [showProfile, setShowProfile] = useState(false)
 
-  const fetchContacts = useCallback(async () => {
-    if (!user?.id) return
-    try {
-      const { data } = await api.get('/users')
-      setContacts(data)
-    } catch (err) {
-      console.error('Failed to fetch registered users from server:', err)
-    }
-  }, [user])
-
   useEffect(() => {
     if (!user?.id) {
       navigate('/login')
       return
     }
 
-    fetchContacts()
     connectSocket(user.id, token)
     const t = setInterval(() => setConnected(isConnected()), 500)
 
@@ -47,12 +36,6 @@ export default function Chat() {
         ...prev,
         [otherId]: [...(prev[otherId] || []), incoming],
       }))
-      setContacts((prev) => {
-        if (!prev.some((c) => c.id === otherId)) {
-          fetchContacts()
-        }
-        return prev
-      })
     })
 
     return () => {
@@ -60,7 +43,7 @@ export default function Chat() {
       unsubscribe()
       disconnectSocket()
     }
-  }, [user, navigate, token, fetchContacts])
+  }, [user, navigate, token])
 
   useEffect(() => {
     if (!active?.id || !user?.id) return

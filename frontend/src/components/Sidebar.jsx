@@ -54,9 +54,10 @@ export default function Sidebar({ contacts, activeId, onSelect, onAddContact, cu
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search username"
+            placeholder="Type email or username"
             className="focus-ring w-full rounded-xl border border-black/10 bg-transparent px-3 py-2 text-sm outline-none dark:border-white/10"
           />
+          <p className="mt-2 text-[0.7rem] opacity-50">Enter an email address to start a private chat with that person.</p>
           {loading && <p className="mt-2 text-[0.7rem] opacity-50">Searching…</p>}
           {!loading && results.length > 0 && (
             <div className="mt-2 space-y-1 rounded-xl border border-black/10 bg-white/70 p-2 shadow-sm dark:border-white/10 dark:bg-black/70">
@@ -71,7 +72,7 @@ export default function Sidebar({ contacts, activeId, onSelect, onAddContact, cu
         </div>
 
         {contacts.length === 0 && (
-          <p className="px-2 py-6 text-sm opacity-50">Search for a username to start chatting.</p>
+          <p className="px-2 py-6 text-sm opacity-50">Search by email or username to start a private chat.</p>
         )}
         <ul className="space-y-1">
           {contacts.map((c) => (

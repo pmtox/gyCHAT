@@ -28,12 +28,19 @@ def search_users(
     current_user: User = Depends(get_current_user)
 ):
     if not q.strip():
-        return db.query(User).filter(User.id != current_user.id).limit(20).all()
-    
-    term = f"%{q.strip()}%"
+        return []
+
+    term = q.strip()
+    if "@" in term:
+        return db.query(User).filter(
+            (User.id != current_user.id) &
+            (User.email.ilike(term))
+        ).limit(20).all()
+
+    like_term = f"%{term}%"
     return db.query(User).filter(
         (User.id != current_user.id) &
-        (User.username.ilike(term) | User.email.ilike(term))
+        (User.username.ilike(like_term) | User.email.ilike(like_term))
     ).limit(20).all()
 
 
